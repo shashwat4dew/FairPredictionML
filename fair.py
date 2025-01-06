@@ -4,8 +4,10 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LinearRegression
 
-# 1. Load the Dataset
+
+# 1.Load the Dataset
 df = pd.read_csv('logical_taxi_fare_dataset2.csv')  # Replace with the correct file path
 
 # 2. Add noise to the features for more randomness
@@ -43,7 +45,24 @@ feature_importances = pd.DataFrame({
 })
 print(feature_importances)
 
-# 8. Visualize Predictions
+
+
+#Prediction of Input
+print("Enter custom trip details:")
+distance_km = float(input("Distance (in km): "))
+duration_min = float(input("Duration (in minutes): "))
+hour_of_day = int(input("Hour of the day (0-23): "))
+traffic_conditions = int(input("Traffic conditions (1: Low, 2: Moderate, 3: Heavy): "))
+
+
+custom_trip = pd.DataFrame([[distance_km, duration_min, hour_of_day, traffic_conditions]],
+                           columns=["distance_km", "duration_min", "hour_of_day", "traffic_conditions"])
+
+
+predicted_fare = model.predict(custom_trip)
+print("\nPredicted Fare for the custom trip:", round(predicted_fare[0], 2))
+
+# Actual v Tested 
 plt.figure(figsize=(10, 6))
 plt.scatter(range(len(y_test)), y_test, color="blue", label="Actual Fare")
 plt.scatter(range(len(y_pred)), y_pred, color="red", label="Predicted Fare", alpha=0.7)
@@ -63,18 +82,30 @@ plt.xlabel("Actual Fare")
 plt.ylabel("Residuals")
 plt.show()
 
-# 10. Custom Prediction
-# Custom Prediction with User Input
-print("Enter custom trip details:")
-distance_km = float(input("Distance (in km): "))
-duration_min = float(input("Duration (in minutes): "))
-hour_of_day = int(input("Hour of the day (0-23): "))
-traffic_conditions = int(input("Traffic conditions (1: Low, 2: Moderate, 3: Heavy): "))
+#Regression line
 
-# Create a DataFrame for the custom trip
-custom_trip = pd.DataFrame([[distance_km, duration_min, hour_of_day, traffic_conditions]],
-                           columns=["distance_km", "duration_min", "hour_of_day", "traffic_conditions"])
+# Select one feature for visualization (e.g., distance_km)
+X_feature = X["distance_km"].values.reshape(-1, 1)
+y_target = y.values
 
-# Predict fare for the custom trip
-predicted_fare = model.predict(custom_trip)
-print("\nPredicted Fare for the custom trip:", round(predicted_fare[0], 2))
+# Train a simple linear regression model for this feature
+simple_model = LinearRegression()
+simple_model.fit(X_feature, y_target)
+
+# Predict values for the feature to draw the regression line
+y_line = simple_model.predict(X_feature)
+
+# Scatter plot and regression line
+plt.figure(figsize=(10, 6))
+plt.scatter(X_feature, y_target, color="blue", label="Actual Data Points", edgecolor="k")
+plt.plot(X_feature, y_line, color="red", label="Regression Line", lw=2)
+plt.title("Linear Regression: Distance vs Fare Amount")
+plt.xlabel("Distance (km)")
+plt.ylabel("Fare Amount ($)")
+plt.legend()
+plt.grid(True)
+plt.show()
+
+
+
+
